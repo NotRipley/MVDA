@@ -1,9 +1,12 @@
+# PART 2: PCA
+source(file = "./R_SCRIPTS/Functions.R")
+
 # LIBRARIES
 library(tidyverse)
+library(ggfortify)
 
 # DATA
-load(file = "Assignment3_Data.RData")
-hdata <- t(data_hypertension)
+D <- load_data()
 
 # PROPORTION OF VARIANCE EXPLAINED BY PC
 # Note: centering of PCs is not optional; scaling of PCs is.
@@ -12,7 +15,7 @@ hdata <- t(data_hypertension)
 # normalisation that we have at the minute. 
 
 # Run prcomp
-PC_hdata <- prcomp(hdata, center = TRUE, scale. = FALSE)
+PC_hdata <- prcomp(D$data, center = TRUE, scale. = FALSE)
 
 # Check summary table
 summ <- summary(PC_hdata_unscaled)
@@ -32,7 +35,20 @@ ggplot() +
 
 # CHOICE OF PC NUMBER FOR DOWNSTREAM: 5 PCS
 
-# IDENTIFY WHETHER SAMPLES CAN BE GROUPED BY ANY OF THE FACTORS AND IN WHICH PC 
-# DIRECTIONS
+# IDENTIFY WHETHER SAMPLES CAN BE GROUPED BY ANY OF THE FACTORS (treatment,
+# time, replicate) AND IN WHICH PC DIRECTIONS
+PC_hdata_scores <- as.data.frame(PC_hdata$x) |>
+  rownames_to_column("sample") |>
+  add_column("times" = D$times,
+             "treatments" = D$treatments,
+             "replicates" = D$replicates)
+
+ggplot(PC_hdata_scores, aes(x = PC1, y = PC2, colour = treatments, shape = factor(times))) +
+  geom_point(size = 3) +
+  scale_colour_manual(values = treatment_colours) +
+  theme_bw()
+
+
+  
 
 
