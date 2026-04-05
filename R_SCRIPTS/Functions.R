@@ -11,3 +11,9 @@ load_data <- function(){
   ))
   
 }
+
+treatment_colours <- c(
+  "Control" <- "grey",
+  "Lisinopril" <- "steelblue",
+  "Amlodipine" <- "tomato"
+)

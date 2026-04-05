@@ -16,11 +16,7 @@ ggplot() +
        title = "Sa6C1: log Gene Expression Histogram")
 
 # BOXPLOT OF LOG GENE EXPRESSION IN A SAMPLE / FOR A PARTICULAR GENE
-data_temp <- D$data
-data_temp$sample <- rownames(D$data)
-
-ggplot() +
-  geom_boxplot(mapping = aes())
+  
 
 # PLOT A TIME COURSE FOR A GENE IN DIFFERENT TREATMENTS
 
