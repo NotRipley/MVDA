@@ -5,6 +5,13 @@ output:
   pdf_document: default
 ---
 
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, results = 'hide', message = FALSE, warning = FALSE)
+
+```
+
+
 ```{r Source and Libraries}
 source(file = "./R_SCRIPTS/Functions.R")
 
@@ -15,7 +22,7 @@ D <- load_data()
 
 ## Introduction
 
-## Part 1: Exploratory Data Analysis
+In this report, we are asked to analyse a dataset and present our findings.
 
 The data that we analyse for this report is mRNA gene expression data, from 60 
 samples and across 2690 genes from a hypothetical (simulated) study.
@@ -23,6 +30,17 @@ samples and across 2690 genes from a hypothetical (simulated) study.
 The aims of this simulated study are to analyse the effects of two treatments
 on a cell culture. The 60 samples are split across two covariates: time (6 or 
 12 hours) and treatment (lisinopril, amlodipine, or control).
+
+Our workflow first presents high-level qualities of the data. We move onto 
+Principal Components Analysis (PCA) and Cluster Analysis, finding meaningful
+partitions of the data. We fit a Linear Discriminant Rule (LDR) to the 
+data, and complete the analysis with a brief application of graph-based
+clustering to the same data. 
+
+
+## Part 1: Exploratory Data Analysis
+
+
 
 ```{r fig-histogram, fig.cap="Histogram Displaying Logarithm of Gene Expression"}
 
@@ -122,7 +140,7 @@ ggplot() +
 
 ```
 
-Where we can confidently choose a value of 5 principal components for downstream
+We can confidently choose a value of 5 principal components for downstream
 analysis. Here we have used an elbow plot method, but can be confident in our 
 low-dimensional representation as these first 5 PCs explain `r cumulative_var_pc[5]` 
 of the variation. 
@@ -141,7 +159,7 @@ ggplot(PC_hdata_scores, aes(x = PC1, y = PC2, colour = treatments, shape = facto
   geom_point(size = 3) +
   scale_colour_manual(values = treatment_colours) +
   labs(shape = "Times",
-       colour = "Treatments")
+       colour = "Treatments") +
   theme_bw()
 
 ```
@@ -150,7 +168,8 @@ It is clear to see that we will be able to split by these covariates. The plot
 gives confidence that we will be able to describe a partition obtained through
 cluster or discriminant analysis in terms of these covariates.
 
-
+Specifically, it looks as if amlodipine samples are split from the rest in the 
+first PC direction; and that the times are split along the second PC. 
 
 ## Part 3: Cluster Analysis
 
@@ -162,6 +181,9 @@ library(mclust) # ari
 library(fpc) # calinhara
 
 ```
+
+In cluster analysis, we look for meaningful partitions of our data. The two
+methods we have elected for comparison are KMeans and Hierarchical clustering. 
 
 ```{r fig-kmeansplot, fig.cap="Plot of the Partition Obtained by KMeans"}
 
@@ -176,14 +198,13 @@ K_kmeans <- estimate_k(embeddings, FUN = kmeans, b = 100)
 K_clustering <- run_kmeans(embeddings, K = K_kmeans$k_val)
 
 ggplot(data = embeddings) +
-  geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(K_clustering$cluster))) +
+  geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(K_clustering))) +
   labs(colour = "Cluster Assignment") +
   theme_bw() +
   theme(legend.position = "bottom",
         legend.direction = "horizontal") 
 
 ```
-
 
 
 
@@ -216,40 +237,50 @@ ggplot(data = embeddings) +
 
 ```
 
-```{r Description of Partitions by Covariates}
 
-# =====================================================
-# DISCUSS WHETHER WE CAN DESCRIBE OUR CLUSTERS IN TERMS OF THE COVARIATES: TIME.
-# TREATMENT, REPLICATES
-# =====================================================
 
-# This is adding the partitions onto the df, clustering and then colouring by 
-# each of our covariates. 
+```{r tables, results='markup'}
 
-# KMeans first
-table(K_clustering$cluster, D$treatments)
-table(K_clustering$cluster, D$times)
+library(broom) 
 
-chisq.test(table(K_clustering$cluster, D$treatments))
-chisq.test(table(K_clustering$cluster, D$times))
+results <- rbind(
+  tidy(chisq.test(table(K_clustering, D$treatments))) |> mutate(comparison = "KMeans ~ Treatments"),
+  tidy(chisq.test(table(K_clustering, D$times)))      |> mutate(comparison = "KMeans ~ Times"),
+  tidy(chisq.test(table(H_clustering$cluster, D$treatments))) |> mutate(comparison = "Hierarchical ~ Treatments"),
+  tidy(chisq.test(table(H_clustering$cluster, D$times)))      |> mutate(comparison = "Hierarchical ~ Times")
+)
 
-# Hierarchical next - need to cuttree first.
-table(H_clustering$cluster, D$treatments)
-table(H_clustering$cluster, D$times)
-
-chisq.test(table(H_clustering$cluster, D$treatments))
-chisq.test(table(H_clustering$cluster, D$times))
-
-# Wow, these are really similar! Are they the same partition?
-table(H_clustering$cluster, K_clustering$cluster)
-# Yes, the table is decoupled. To really force the point:
-HK_ari <- mclust::adjustedRandIndex(H_clustering$cluster, K_clustering$cluster)
+knitr::kable(results[, c("comparison", "statistic", "parameter", "p.value")],
+      col.names = c("Comparison", "X-squared", "df", "p-value"),
+      digits = 25,
+      caption = "Chi-square tests: clustering vs experimental variables")
 
 ```
 
 
 
-```{r Evaluation of Clustering Performance}
+```{r Description of Partitions by Covariates, results='markup'}
+# KMeans first
+chisq.test(table(K_clustering, D$treatments))
+chisq.test(table(K_clustering, D$times))
+
+# Hierarchical next
+chisq.test(table(H_clustering$cluster, D$treatments))
+chisq.test(table(H_clustering$cluster, D$times))
+
+# Wow, these are really similar! Are they the same partition?
+knitr::kable(table(H_clustering$cluster, K_clustering),
+             caption = "Comparison of Hierarchical and KMeans Partitions")
+
+
+# Yes, the table is decoupled. To really force the point:
+HK_ari <- mclust::adjustedRandIndex(H_clustering$cluster, K_clustering)
+
+```
+
+
+
+```{r Evaluation of Clustering Performance, results='markup'}
 
 # =====================================================
 # EVALUATE CLUSTERING PERFORMANCE
@@ -257,7 +288,7 @@ HK_ari <- mclust::adjustedRandIndex(H_clustering$cluster, K_clustering$cluster)
 
 H_eval <- evaluate_partition(embeddings, H_clustering$cluster, FUN = hcut)
 
-K_eval <- evaluate_partition(embeddings, K_clustering$cluster, FUN = kmeans)
+K_eval <- evaluate_partition(embeddings, K_clustering, FUN = kmeans)
 
 H_eval
 K_eval
@@ -266,7 +297,7 @@ K_eval
 
 ## Part 4: Discriminant Analysis
 
-```{r Discriminant}
+```{r Discriminant, results='markup'}
 
 library(MASS)
 
@@ -290,8 +321,21 @@ chisq.test(table(D$times, predicted))
 
 ```
 
+Here we seek to fit a linear discriminant rule to classify which timestamp
+each sample has attached to it, as this is a factor variable with two levels. 
+
+From our discriminant analysis, we see that we have acheived perfect separation.
+This tells us that within our low-dimensional representation of the data, there
+is no overlap between the groups belonging to each timestamp.
+
 ## Part 5: Extension to Graph-Based Clustering
 
+In contemporary mRNA sequencing workflows, alternative cluster analysis methods 
+are commonly employed. One such is the Louvain algorithm. It is graph-based,
+rather than acting on the expression or similarity matrix directly. 
+
+Here we demonstrate its results on the same data as an extension of the cluster 
+analysis in Part 3. 
 
 ```{r Louvain}
 
@@ -320,7 +364,7 @@ V(G)$name <- rownames(D$data)
 
 ggraph(G, layout = "fr") +
   geom_edge_link(aes(alpha = weight), show.legend = FALSE) +
-  geom_node_point(aes(colour = factor(community)), size = 5) +
+  geom_node_point(aes(colour = factor(community)), size = 3) +
   geom_node_text(aes(label = name), repel = TRUE, size = 3) +
   scale_colour_discrete(name = "Community") +
   theme_graph()
