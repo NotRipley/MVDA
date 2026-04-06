@@ -31,8 +31,25 @@ treatment_colours <- c(
 # PART 2 #
 ##########
 
-# Set centrally the number of principal components to carry forward
+# Set centrally the number of principal components to carry forward, define
+# function for quickly getting embeddings
+
 npcs <- 5
+
+get_embeddings <- function(npcs, data) {
+  # Loads data using load_data() and returns embeddings in PCs of up to 
+  # a specified number, set just above here. 
+  # --------------------------------------------------------------------
+  # npcs - the integer number of PCs up to which to store in output. 
+  # data - the data to be used
+  
+  P <- prcomp(D$data)
+  embeddings <- P$x[, 1:npcs]
+  
+  return(data.frame(embeddings))
+  
+  
+}
 
 ##########
 # PART 3 #

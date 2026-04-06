@@ -36,6 +36,14 @@ ggplot(data = long_data) +
         legend.direction = "horizontal",
         axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
+ggplot(data = long_data, aes(x = treatments, y = expression, fill = treatments,
+                             group = sample)) +
+  geom_boxplot(outlier.size = 0.4, outlier.alpha = 0.4) +
+  facet_wrap(~times, labeller = label_both) +
+  scale_fill_manual(values = treatment_colours, guide = "none") +
+  theme_bw()
+  
+
 
 # PLOT A TIME COURSE FOR A GENE IN DIFFERENT TREATMENTS
 
