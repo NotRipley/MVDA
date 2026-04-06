@@ -22,11 +22,7 @@ D <- load_data()
 # N.B. we are carrying forward only five PCs from our PC section.
 
 P <- prcomp(D$data)
-embeddings <- P$x[, 1:npcs]
-
-k <- estimate_k(embeddings, FUN = kmeans, b = 100)
-
-#Where now we've added this to Functions.R
+embeddings <- get_embeddings(npcs = npcs, data = D$data)
 
 # =====================================================
 # COMPARE CLUSTERING RESULTS ON TWO DIFFERENT METHODS
@@ -36,10 +32,12 @@ k <- estimate_k(embeddings, FUN = kmeans, b = 100)
 # KMEANS
 # =====================================================
 
+K_kmeans <- estimate_k(embeddings, FUN = kmeans, b = 100)
+
 K_clustering <- run_kmeans(embeddings, K = K_kmeans)
 
 ggplot(data = embeddings) +
-  geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(kmobject$cluster)))
+  geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(K_clustering$cluster)))
 
 # =====================================================
 # HIERARCHICAL
@@ -50,7 +48,10 @@ ggplot(data = embeddings) +
 (sapply(m, function(m_val) hierarchical_check_methods(m_val, df = embeddings)))
 
 # Choose an optimal K for use with hierarchical clustering, this also being 6. 
-k <- estimate_k(embeddings, hcut)
+K_hier <- estimate_k(embeddings, hcut)
+
+# Choice of method based on agglomerative coefficient from cluster::agnes()
+method_choice = "ward"
 
 # Run the clustering.
 H_clustering <- run_hierarchical(matrix = embeddings, method = method_choice, 

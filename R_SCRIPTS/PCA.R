@@ -3,7 +3,6 @@ source(file = "./R_SCRIPTS/Functions.R")
 
 # LIBRARIES
 library(tidyverse)
-library(ggfortify)
 
 # DATA
 D <- load_data()
@@ -18,7 +17,7 @@ D <- load_data()
 PC_hdata <- prcomp(D$data, center = TRUE, scale. = FALSE)
 
 # Check summary table
-summ <- summary(PC_hdata_unscaled)
+summ <- summary(PC_hdata)
 summ
 
 # Compute and plot cumulative variation explained by PC
@@ -47,6 +46,7 @@ ggplot(PC_hdata_scores, aes(x = PC1, y = PC2, colour = treatments, shape = facto
   geom_point(size = 3) +
   scale_colour_manual(values = treatment_colours) +
   theme_bw()
+
 
 
   

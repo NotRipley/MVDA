@@ -1,8 +1,268 @@
 ---
 title: "Multivariate Data Analysis Assignment 3"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
-```{r Source}
+```{r Source and Libraries}
 source(file = "./R_SCRIPTS/Functions.R")
+
+library(tidyverse)
+
+D <- load_data()
 ```
+
+## Introduction
+
+## Part 1: Exploratory Data Analysis
+
+The data that we analyse for this report is mRNA gene expression data, from 60 
+samples and across 2690 genes from a hypothetical (simulated) study.
+
+The aims of this simulated study are to analyse the effects of two treatments
+on a cell culture. The 60 samples are split across two covariates: time (6 or 
+12 hours) and treatment (lisinopril, amlodipine, or control).
+
+```{r fig-histogram, fig.cap="Histogram Displaying Logarithm of Gene Expression"}
+
+# HISTOGRAM OF LOG GENE EXPRESSION IN A SAMPLE / FOR A PARTICULAR GENE
+ggplot() +
+  geom_histogram(mapping = aes(x = D$data[1,]), bins = 40, fill = "steelblue", 
+                 colour = "white") +
+  theme_bw() +
+  labs(x = "log Gene Expression",
+       y = "Frequency",
+       title = "Sa6C1: log Gene Expression Histogram")
+
+```
+
+
+
+```{r fig-boxplot, fig.cap="Boxplot Displaying Distribution of Log Gene Expressions, Split by Covariates"}
+
+# BOXPLOT OF LOG GENE EXPRESSION IN A SAMPLE / FOR A PARTICULAR GENE
+selection = c("sample", "times", "treatments")
+
+long_data <- as.data.frame(D$data) |> 
+  add_column("times" = D$times, 
+             "treatments" = D$treatments) |> 
+  rownames_to_column(var = "sample") |> 
+  pivot_longer(cols = !any_of((selection)),
+               names_to = "gene",
+               values_to = "expression")
+
+ggplot(data = long_data, aes(x = treatments, y = expression, fill = treatments,
+                             group = sample)) +
+  geom_boxplot(outlier.size = 0.4, outlier.alpha = 0.4) +
+  facet_wrap(~times, labeller = label_both) +
+  scale_fill_manual(values = treatment_colours, guide = "none") +
+  theme_bw()
+
+```
+
+Figures \@ref(fig:fig-histogram) and \@ref(fig:fig-boxplot) display the
+distributions of gene expression over our 60 samples. Note the logarithm of the 
+gene expression is given instead of the raw expression value, as the data is 
+given to us in log-normalised form. Then, when plotting the data in our
+histogram, we see a distribution that resembles a Gaussian one. This we expect. 
+
+From \@ref(fig:fig-boxplot), we can see that the distributions of expression are
+not affected to large extent by either of time or treatment. Nor is there much 
+variation between replicates; this is expected.
+
+
+```{r fig-timecourse, fig.cap="Time Course for Gene 1415670_at"}
+
+# PLOT A TIME COURSE FOR A GENE IN DIFFERENT TREATMENTS
+
+time_data <- as.data.frame(D$data[, 1]) |> 
+  rename(expression = 1) |> 
+  add_column("times" = D$times,
+             "treatments" = D$treatments)
+
+ggplot(data = time_data) +
+  geom_jitter(mapping = aes(x = times, y = expression, colour = treatments), width = 0.1) +
+  geom_line(data = time_data |> 
+              group_by(treatments, times) |> 
+              summarise(expression = mean(expression), .groups = "drop"),
+            mapping = aes(x = times, y = expression, colour = treatments, group = treatments),
+            linewidth = 0.8) +
+  scale_colour_manual(values = treatment_colours) +
+  labs(x = "Time", y = "log Expression", colour = "Treatment") +
+  theme_bw()
+
+```
+
+Here in Figure \@ref(fig:fig-timecourse) we examine the differences between 
+those samples sequenced at time 6 and those at time 12. We can see a decrease in 
+expression in the case of the control and lisinopril treatments, contrasted with
+an increase in that of amlodipine. 
+
+
+## Part 2: Prinicpal Components Analysis
+
+```{r fig-cumulative_variation, fig.cap="Plot of Variation Explained per PC"}
+
+# Run prcomp
+PC_hdata <- prcomp(D$data, center = TRUE, scale. = FALSE)
+
+# Compute and plot cumulative variation explained by PC
+var_pc <- PC_hdata$sdev^2
+tot_var_pc <- sum(PC_hdata$sdev^2)
+cumulative_var_pc <- cumsum(var_pc / tot_var_pc)
+
+ggplot() +
+  geom_vline(xintercept = 5, colour = "tomato", linewidth = 0.8) +
+  geom_point(mapping = aes(x = 1:60, y = cumulative_var_pc)) +
+  scale_x_continuous(breaks = function(x) c(scales::breaks_pretty()(x), 5)) +
+  theme_bw() +
+  labs(x = "PC Index",
+       y = "Prop. Variation Explained",
+       title = "Proportion of Variation Explained by PC")
+
+```
+
+Where we can confidently choose a value of 5 principal components for downstream
+analysis. 
+
+```{r fig-pcplot, fig.cap="Plot of the first two PCs against each other."}
+
+# IDENTIFY WHETHER SAMPLES CAN BE GROUPED BY ANY OF THE FACTORS (treatment,
+# time, replicate) AND IN WHICH PC DIRECTIONS
+PC_hdata_scores <- as.data.frame(PC_hdata$x) |>
+  rownames_to_column("sample") |>
+  add_column("times" = D$times,
+             "treatments" = D$treatments,
+             "replicates" = D$replicates)
+
+ggplot(PC_hdata_scores, aes(x = PC1, y = PC2, colour = treatments, shape = factor(times))) +
+  geom_point(size = 3) +
+  scale_colour_manual(values = treatment_colours) +
+  labs(shape = "Times",
+       colour = "Treatments")
+  theme_bw()
+
+```
+
+It is clear to see that we will be able to split by these covariates. The plot
+gives confidence that we will be able to describe a partition obtained through
+cluster or discriminant analysis in terms of these covariates.
+
+
+
+## Part 3: Cluster Analysis
+
+```{r More Libraries}
+
+library(cluster) # kmeans, hierarchical, silhouette
+library(factoextra) # hierarchical
+library(mclust) # ari
+library(fpc) # calinhara
+
+```
+
+```{r fig-kmeansplot, fig.cap="Plot of the Partition Obtained by KMeans"}
+
+# =====================================================
+# KMEANS
+# =====================================================
+
+embeddings <- get_embeddings(npcs, D$data)
+
+K_kmeans <- estimate_k(embeddings, FUN = kmeans, b = 100)
+
+K_clustering <- run_kmeans(embeddings, K = K_kmeans)
+
+ggplot(data = embeddings) +
+  geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(K_clustering$cluster))) +
+  labs(colour = "Cluster Assignment") +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") 
+
+```
+```{r fig-hierplot, fig.cap="Plot of the Partition Obtained by Hierarchical"}
+
+# =====================================================
+# HIERARCHICAL
+# =====================================================
+
+embeddings <- get_embeddings(npcs, D$data)
+
+# Choose an optimal K for use with hierarchical clustering, this also being 6. 
+K_hier <- estimate_k(embeddings, hcut)
+
+# Choice of method based on agglomerative coefficient from cluster::agnes()
+method_choice = "ward"
+
+# Run the clustering.
+H_clustering <- run_hierarchical(matrix = embeddings, method = method_choice, 
+                                 K = K_hier$k_val)
+
+# Plot the partition.
+ggplot(data = embeddings) +
+  geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(H_clustering$cluster))) +
+  labs(colour = "Cluster Assignment") +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") 
+
+
+```
+
+```{r Description of Partitions by Covariates}
+
+# =====================================================
+# DISCUSS WHETHER WE CAN DESCRIBE OUR CLUSTERS IN TERMS OF THE COVARIATES: TIME.
+# TREATMENT, REPLICATES
+# =====================================================
+
+# This is adding the partitions onto the df, clustering and then colouring by 
+# each of our covariates. 
+
+# KMeans first
+table(K_clustering$cluster, D$treatments)
+table(K_clustering$cluster, D$times)
+
+chisq.test(table(K_clustering$cluster, D$treatments))
+chisq.test(table(K_clustering$cluster, D$times))
+
+# Hierarchical next - need to cuttree first.
+table(H_clustering$cluster, D$treatments)
+table(H_clustering$cluster, D$times)
+
+chisq.test(table(H_clustering$cluster, D$treatments))
+chisq.test(table(H_clustering$cluster, D$times))
+
+# Wow, these are really similar! Are they the same partition?
+table(H_clustering$cluster, K_clustering$cluster)
+# Yes, the table is decoupled. To really force the point:
+HK_ari <- mclust::adjustedRandIndex(H_clustering$cluster, K_clustering$cluster)
+
+```
+
+
+
+```{r Evaluation of Clustering Performance}
+
+# =====================================================
+# EVALUATE CLUSTERING PERFORMANCE
+# =====================================================
+
+H_eval <- evaluate_partition(embeddings, H_clustering$cluster, FUN = hcut)
+
+K_eval <- evaluate_partition(embeddings, K_clustering$cluster, FUN = kmeans)
+
+H_eval
+K_eval
+
+```
+
+## Part 4: Discriminant Analysis
+
+
+
+## Part 5: Extension to Graph-Based Clustering
+
+## Bibliography
