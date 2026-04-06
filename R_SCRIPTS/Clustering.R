@@ -87,6 +87,9 @@ HK_ari <- mclust::adjustedRandIndex(H_clustering$cluster, K_clustering$cluster)
 # EVALUATE CLUSTERING PERFORMANCE
 # =====================================================
 
+H_eval <- evaluate_partition(embeddings, H_clustering$cluster, FUN = hcut)
+
+K_eval <- evaluate_partition(embeddings, K_clustering$cluster, FUN = kmeans)
 
 
 

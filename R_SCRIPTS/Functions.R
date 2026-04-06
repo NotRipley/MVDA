@@ -145,7 +145,7 @@ run_hierarchical <- function(matrix, method, K){
   
 }
 
-evaluate_and_visualise <- function(matrix, labels, FUN, kmax = 20, b = 100) {
+evaluate_partition <- function(matrix, labels, FUN, kmax = 20, b = 100) {
   # Takes a partition of a dataset and computes several cluster evaluation 
   # metrics: Silhouette score, Gap statistic, Variance Ratio Criterion. 
   # -----------------------------------------------------------------------
@@ -164,9 +164,11 @@ evaluate_and_visualise <- function(matrix, labels, FUN, kmax = 20, b = 100) {
   gap_stat <- cluster::clusGap(matrix,
                                FUNcluster = FUN,
                                K.max = kmax,
-                               B = b)$Tab[, 3]
+                               B = b)$Tab[length(unique(labels)), "gap"]
   
-  
+  return(list("Silhouette" = avg_silhouette_width,
+              "VRC" = calinhara,
+              "Gap" = gap_stat))
 }
 
 
