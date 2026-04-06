@@ -37,7 +37,7 @@ K_kmeans <- estimate_k(embeddings, FUN = kmeans, b = 100)
 K_clustering <- run_kmeans(embeddings, K = K_kmeans)
 
 ggplot(data = embeddings) +
-  geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(K_clustering$cluster)))
+  geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(K_clustering)))
 
 # =====================================================
 # HIERARCHICAL

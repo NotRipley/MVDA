@@ -69,7 +69,7 @@ histogram, we see a distribution that resembles a Gaussian one. This we expect.
 
 From \@ref(fig:fig-boxplot), we can see that the distributions of expression are
 not affected to large extent by either of time or treatment. Nor is there much 
-variation between replicates; this is expected.
+variation between replicates.
 
 
 ```{r fig-timecourse, fig.cap="Time Course for Gene 1415670_at"}
@@ -99,7 +99,6 @@ those samples sequenced at time 6 and those at time 12. We can see a decrease in
 expression in the case of the control and lisinopril treatments, contrasted with
 an increase in that of amlodipine. 
 
-
 ## Part 2: Prinicpal Components Analysis
 
 ```{r fig-cumulative_variation, fig.cap="Plot of Variation Explained per PC"}
@@ -124,7 +123,9 @@ ggplot() +
 ```
 
 Where we can confidently choose a value of 5 principal components for downstream
-analysis. 
+analysis. Here we have used an elbow plot method, but can be confident in our 
+low-dimensional representation as these first 5 PCs explain `r cumulative_var_pc[5]` 
+of the variation. 
 
 ```{r fig-pcplot, fig.cap="Plot of the first two PCs against each other."}
 
@@ -172,7 +173,7 @@ embeddings <- get_embeddings(npcs, D$data)
 
 K_kmeans <- estimate_k(embeddings, FUN = kmeans, b = 100)
 
-K_clustering <- run_kmeans(embeddings, K = K_kmeans)
+K_clustering <- run_kmeans(embeddings, K = K_kmeans$k_val)
 
 ggplot(data = embeddings) +
   geom_point(mapping = aes(x = PC1, y = PC2, colour = as.factor(K_clustering$cluster))) +
@@ -182,6 +183,10 @@ ggplot(data = embeddings) +
         legend.direction = "horizontal") 
 
 ```
+
+
+
+
 ```{r fig-hierplot, fig.cap="Plot of the Partition Obtained by Hierarchical"}
 
 # =====================================================
@@ -261,8 +266,68 @@ K_eval
 
 ## Part 4: Discriminant Analysis
 
+```{r Discriminant}
 
+library(MASS)
+
+# USING PC SCORES AS VARIABLES, GET A LINEAR DISCRIMINANT ANALYSIS RULE TO 
+# DISCRIMINATE BETWEEN CELLS AT 12 HOURS (see file)
+
+# Get embeddings and data
+D <- load_data()
+embeddings <- get_embeddings(npcs, data = D$data)
+embeddings$times <- as.factor(D$times)
+
+LDA <- MASS::lda(times ~ PC1 + PC2 + PC3 + PC4 + PC5, data = (embeddings))
+
+predicted <- predict(LDA)$class
+
+table(D$times, predicted)
+chisq.test(table(D$times, predicted))
+
+# This is our confusion matrix. We see perfect performance from our discriminant
+# rule. 
+
+```
 
 ## Part 5: Extension to Graph-Based Clustering
 
-## Bibliography
+
+```{r Louvain}
+
+# LIBRARIES
+library(tidyverse)
+library(igraph)
+library(ggraph)
+
+sim_matrix <- 1 / (1 + as.matrix(dist(D$data)))
+
+N <- 5 # set centrally in a second, but a lot of this needs moved over. 
+
+knn_matrix <- apply(sim_matrix, 1, function(row) {
+  threshold <- sort(row, decreasing = TRUE)[N]
+  row[row < threshold] <- 0
+  return(row)
+})
+
+G <- graph_from_adjacency_matrix(knn_matrix, mode = "undirected",
+                                 weighted = TRUE)
+communities <- cluster_louvain(G, weights = E(G)$weight)
+
+V(G)$community <- membership(communities)
+
+V(G)$name <- rownames(D$data)  
+
+ggraph(G, layout = "fr") +
+  geom_edge_link(aes(alpha = weight), show.legend = FALSE) +
+  geom_node_point(aes(colour = factor(community)), size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_colour_discrete(name = "Community") +
+  theme_graph()
+
+```
+
+
+
+
+

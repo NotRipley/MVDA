@@ -113,7 +113,7 @@ run_kmeans <- function(matrix, K, itermax = 20, nstart = 25){
                      iter.max = itermax,
                      nstart = nstart)
   
-  return(kmobject)
+  return(kmobject$cluster)
   
 }
 
