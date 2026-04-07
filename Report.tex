@@ -2,7 +2,7 @@
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \documentclass[
-]{article}
+  twocolumn]{article}
 \usepackage{xcolor}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb}
@@ -37,46 +37,16 @@
 }{% if KOMA class
   \KOMAoptions{parskip=half}}
 \makeatother
-\usepackage{color}
-\usepackage{fancyvrb}
-\newcommand{\VerbBar}{|}
-\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
-\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
-% Add ',fontsize=\small' for more characters per line
-\usepackage{framed}
-\definecolor{shadecolor}{RGB}{248,248,248}
-\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
-\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
-\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
-\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\BuiltInTok}[1]{#1}
-\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
-\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
-\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
-\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
-\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
-\newcommand{\ExtensionTok}[1]{#1}
-\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
-\newcommand{\ImportTok}[1]{#1}
-\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
-\newcommand{\NormalTok}[1]{#1}
-\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
-\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
-\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
-\newcommand{\RegionMarkerTok}[1]{#1}
-\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
-\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
-\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
 \usepackage{graphicx}
 \makeatletter
 \newsavebox\pandoc@box
@@ -95,6 +65,8 @@
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{booktabs}
+\usepackage{float}
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
@@ -110,136 +82,170 @@
 \begin{document}
 \maketitle
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{source}\NormalTok{(}\AttributeTok{file =} \StringTok{"./R\_SCRIPTS/Functions.R"}\NormalTok{)}
-
-\FunctionTok{library}\NormalTok{(tidyverse)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## -- Attaching core tidyverse packages ------------------------ tidyverse 2.0.0 --
-## v dplyr     1.1.4     v readr     2.1.5
-## v forcats   1.0.1     v stringr   1.5.2
-## v ggplot2   4.0.0     v tibble    3.3.0
-## v lubridate 1.9.4     v tidyr     1.3.1
-## v purrr     1.1.0     
-## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()
-## i Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{D }\OtherTok{\textless{}{-}} \FunctionTok{load\_data}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
+\raggedbottom
 
 \subsection{Introduction}\label{introduction}
 
-\subsection{Part 1: Exploratory Data
-Analysis}\label{part-1-exploratory-data-analysis}
+In this report, we are asked to analyse a dataset and present our findings.
 
-The data that we analyse for this report is mRNA gene expression data,
-from 60 samples and across 2690 genes from a hypothetical (simulated)
-study.
+The data that we analyse for this report is mRNA gene expression data, from 60
+samples and across 2690 genes from a hypothetical (simulated) study.
 
-The aims of this simulated study are to analyse the effects of two
-treatments on a cell culture. The 60 samples are split across two
-covariates: time (6 or 12 hours) and treatment (lisinopril, amlodipine,
-or control).
+The aims of this simulated study are to analyse the effects of two treatments
+on a cell culture. The 60 samples are split across two covariates: time (6 or
+12 hours) and treatment (lisinopril, amlodipine, or control).
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# HISTOGRAM OF LOG GENE EXPRESSION IN A SAMPLE / FOR A PARTICULAR GENE}
-\FunctionTok{ggplot}\NormalTok{() }\SpecialCharTok{+}
-  \FunctionTok{geom\_histogram}\NormalTok{(}\AttributeTok{mapping =} \FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ D}\SpecialCharTok{$}\NormalTok{data[}\DecValTok{1}\NormalTok{,]), }\AttributeTok{bins =} \DecValTok{40}\NormalTok{, }\AttributeTok{fill =} \StringTok{"steelblue"}\NormalTok{, }
-                 \AttributeTok{colour =} \StringTok{"white"}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{theme\_bw}\NormalTok{() }\SpecialCharTok{+}
-  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"log Gene Expression"}\NormalTok{,}
-       \AttributeTok{y =} \StringTok{"Frequency"}\NormalTok{,}
-       \AttributeTok{title =} \StringTok{"Sa6C1: log Gene Expression Histogram"}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
+Our workflow first presents high-level qualities of the data. We move onto
+Principal Components Analysis (PCA) and Cluster Analysis, finding meaningful
+partitions of the data. We fit a Linear Discriminant Rule (LDR) to the
+data, and complete the analysis with a brief application of graph-based
+clustering to the same data.
+
+\subsection{Part 1: Exploratory Data Analysis}\label{part-1-exploratory-data-analysis}
 
 \begin{figure}
 \centering
 \pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/fig-histogram-1.pdf}}
-\caption{Histogram Displaying Logarithm of Gene Expression}
+\caption{\label{fig:fig-histogram}Histogram Displaying Logarithm of Gene Expression}
 \end{figure}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# BOXPLOT OF LOG GENE EXPRESSION IN A SAMPLE / FOR A PARTICULAR GENE}
-\NormalTok{selection }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\StringTok{"sample"}\NormalTok{, }\StringTok{"times"}\NormalTok{, }\StringTok{"treatments"}\NormalTok{)}
-
-\NormalTok{long\_data }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(D}\SpecialCharTok{$}\NormalTok{data) }\SpecialCharTok{|\textgreater{}} 
-  \FunctionTok{add\_column}\NormalTok{(}\StringTok{"times"} \OtherTok{=}\NormalTok{ D}\SpecialCharTok{$}\NormalTok{times, }
-             \StringTok{"treatments"} \OtherTok{=}\NormalTok{ D}\SpecialCharTok{$}\NormalTok{treatments) }\SpecialCharTok{|\textgreater{}} 
-  \FunctionTok{rownames\_to\_column}\NormalTok{(}\AttributeTok{var =} \StringTok{"sample"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
-  \FunctionTok{pivot\_longer}\NormalTok{(}\AttributeTok{cols =} \SpecialCharTok{!}\FunctionTok{any\_of}\NormalTok{((selection)),}
-               \AttributeTok{names\_to =} \StringTok{"gene"}\NormalTok{,}
-               \AttributeTok{values\_to =} \StringTok{"expression"}\NormalTok{)}
-
-\FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data =}\NormalTok{ long\_data, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ treatments, }\AttributeTok{y =}\NormalTok{ expression, }\AttributeTok{fill =}\NormalTok{ treatments,}
-                             \AttributeTok{group =}\NormalTok{ sample)) }\SpecialCharTok{+}
-  \FunctionTok{geom\_boxplot}\NormalTok{(}\AttributeTok{outlier.size =} \FloatTok{0.4}\NormalTok{, }\AttributeTok{outlier.alpha =} \FloatTok{0.4}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{times, }\AttributeTok{labeller =}\NormalTok{ label\_both) }\SpecialCharTok{+}
-  \FunctionTok{scale\_fill\_manual}\NormalTok{(}\AttributeTok{values =}\NormalTok{ treatment\_colours, }\AttributeTok{guide =} \StringTok{"none"}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{theme\_bw}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
 
 \begin{figure}
 \centering
 \pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/fig-boxplot-1.pdf}}
-\caption{Boxplot Displaying Distribution of Log Gene Expressions, Split
-by Covariates}
+\caption{\label{fig:fig-boxplot}Boxplot Displaying Distribution of Log Gene Expressions, Split by Covariates}
 \end{figure}
 
-Figures @ref(fig:fig-histogram) and @ref(fig:fig-boxplot) display the
-distributions of gene expression over our 60 samples. Note the logarithm
-of the gene expression is given instead of the raw expression value, as
-the data is given to us in log-normalised form. Then, when plotting the
-data in our histogram, we see a distribution that resembles a Gaussian
-one. This we expect.
+Figures \ref{fig:fig-histogram} and \ref{fig:fig-boxplot} display the
+distributions of gene expression over our 60 samples. Note the logarithm of the
+gene expression is given instead of the raw expression value, as the data is
+given to us in log-normalised form. Then, when plotting the data in our
+histogram, we see a distribution that resembles a Gaussian one. This we expect.
 
-We may compare differences between covariates in Figure
-@ref(fig:fig-boxplot).
+From Figure \ref{fig:fig-boxplot}, we can see that the distributions of expression are
+not affected to large extent by either of time or treatment. Nor is there much
+variation between replicates.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# PLOT A TIME COURSE FOR A GENE IN DIFFERENT TREATMENTS}
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/fig-timecourse-1.pdf}}
+\caption{\label{fig:fig-timecourse}Time Course for Gene 1415670\_at}
+\end{figure}
 
-\NormalTok{time\_data }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(D}\SpecialCharTok{$}\NormalTok{data[, }\DecValTok{1}\NormalTok{]) }\SpecialCharTok{|\textgreater{}} 
-  \FunctionTok{rename}\NormalTok{(}\AttributeTok{expression =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
-  \FunctionTok{add\_column}\NormalTok{(}\StringTok{"times"} \OtherTok{=}\NormalTok{ D}\SpecialCharTok{$}\NormalTok{times,}
-             \StringTok{"treatments"} \OtherTok{=}\NormalTok{ D}\SpecialCharTok{$}\NormalTok{treatments)}
+Here in Figure \ref{fig:fig-timecourse} we examine the differences between
+those samples sequenced at time 6 and those at time 12. We can see a decrease in
+expression in the case of the control and lisinopril treatments, contrasted with
+an increase in that of amlodipine.
 
-\FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data =}\NormalTok{ time\_data) }\SpecialCharTok{+}
-  \FunctionTok{geom\_jitter}\NormalTok{(}\AttributeTok{mapping =} \FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ times, }\AttributeTok{y =}\NormalTok{ expression, }\AttributeTok{colour =}\NormalTok{ treatments), }\AttributeTok{width =} \FloatTok{0.1}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{geom\_line}\NormalTok{(}\AttributeTok{mapping =} \FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ times, }\AttributeTok{y =}\NormalTok{ expression, }\AttributeTok{colour =}\NormalTok{ treatments,}
-                          \AttributeTok{group =}\NormalTok{ treatments), }\AttributeTok{linewidth =} \FloatTok{0.8}\NormalTok{) }\SpecialCharTok{+}
-  \FunctionTok{scale\_colour\_manual}\NormalTok{(}\AttributeTok{values =}\NormalTok{ treatment\_colours) }\SpecialCharTok{+}
-  \FunctionTok{theme\_bw}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
+\subsection{Part 2: Prinicpal Components Analysis}\label{part-2-prinicpal-components-analysis}
 
-\pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/Time Course-1.pdf}}
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/fig-cumulative-variation-1.pdf}}
+\caption{\label{fig:fig-cumulative-variation}Plot of Variation Explained per PC}
+\end{figure}
 
-\subsection{Part 2: Prinicpal Components
-Analysis}\label{part-2-prinicpal-components-analysis}
+We can confidently choose a value of 5 principal components for downstream
+analysis. Here we have used an elbow plot method, but can be confident in our
+low-dimensional representation as these first 5 PCs explain 0.9414508
+of the variation.
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/fig-pcplot-1.pdf}}
+\caption{\label{fig:fig-pcplot}Plot of the first two PCs against each other.}
+\end{figure}
+
+It is clear to see that we will be able to split by these covariates. The plot
+gives confidence that we will be able to describe a partition obtained through
+cluster or discriminant analysis in terms of these covariates.
+
+Specifically, it looks as if amlodipine samples are split from the rest in the
+first PC direction; and that the times are split along the second PC.
 
 \subsection{Part 3: Cluster Analysis}\label{part-3-cluster-analysis}
 
-\subsection{Part 4: Discriminant
-Analysis}\label{part-4-discriminant-analysis}
+In cluster analysis, we look for meaningful partitions of our data. The two
+methods we have elected for comparison are KMeans and Hierarchical clustering.
 
-\subsection{Part 5: Extension to Graph-Based
-Clustering}\label{part-5-extension-to-graph-based-clustering}
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/fig-kmeansplot-1.pdf}}
+\caption{\label{fig:fig-kmeansplot}Plot of the Partition Obtained by KMeans}
+\end{figure}
 
-\subsection{Bibliography}\label{bibliography}
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/fig-hierplot-1.pdf}}
+\caption{\label{fig:fig-hierplot}Plot of the Partition Obtained by Hierarchical}
+\end{figure}
+
+\begin{table}
+
+\caption{\label{tab:tables}Chi-square tests: clustering vs experimental variables}
+\centering
+\begin{tabular}[t]{lrrl}
+\toprule
+Comparison & $\chi^2$ & df & p\\
+\midrule
+KMeans ~ Treatments & 120 & 10 & 5.1e-21\\
+KMeans ~ Times & 60 & 5 & 1.2e-11\\
+Hierarchical ~ Treatments & 120 & 10 & 5.1e-21\\
+Hierarchical ~ Times & 60 & 5 & 1.2e-11\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+
+\caption{\label{tab:tab-partitions}Comparison of Hierarchical and KMeans Partitions}
+\centering
+\begin{tabular}[t]{rrrrrr}
+\toprule
+1 & 2 & 3 & 4 & 5 & 6\\
+\midrule
+0 & 0 & 10 & 0 & 0 & 0\\
+10 & 0 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 10 & 0\\
+0 & 10 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 0 & 10\\
+\addlinespace
+0 & 0 & 0 & 10 & 0 & 0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Part 4: Discriminant Analysis}\label{part-4-discriminant-analysis}
+
+\begin{table}
+
+\caption{\label{tab:Discriminant}Confusion Matrix: LDA on Time}
+\centering
+\begin{tabular}[t]{lrr}
+\toprule
+  & 6 & 12\\
+\midrule
+6 & 30 & 0\\
+12 & 0 & 30\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Here we seek to fit a linear discriminant rule to classify which timestamp
+each sample has attached to it, as this is a factor variable with two levels.
+
+From our discriminant analysis, we see that we have acheived perfect separation.
+This tells us that within our low-dimensional representation of the data, there
+is no overlap between the groups belonging to each timestamp.
+
+\subsection{Part 5: Extension to Graph-Based Clustering}\label{part-5-extension-to-graph-based-clustering}
+
+In contemporary mRNA sequencing workflows, alternative cluster analysis methods
+are commonly employed. One such is the Louvain algorithm. It is graph-based,
+rather than acting on the expression or similarity matrix directly.
+
+Here we demonstrate its results on the same data as an extension of the cluster
+analysis in Part 3.
+
+\pandocbounded{\includegraphics[keepaspectratio]{Report_files/figure-latex/Louvain-1.pdf}}
 
 \end{document}
